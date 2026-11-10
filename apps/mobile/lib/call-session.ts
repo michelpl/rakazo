@@ -16,7 +16,6 @@ import {
   newClientId,
   pendingCallSecretAsk,
   readJsonObjectWithin,
-  recognitionLocaleTag,
   reduceThreadSnapshot,
   retryDelayMs,
   spokenMemory,
@@ -45,6 +44,10 @@ import { blockText } from "./mobile-types";
 import { reportMobileError } from "./monitoring";
 import { fetchServer } from "./server-headers";
 import { currentSessionGeneration, subscribeSessionGeneration } from "./session";
+import {
+  loadSpeechRecognitionLanguage,
+  resolveSpeechRecognitionLanguage,
+} from "./speech-recognition-language";
 import { errorText, voiceAccountErrorText } from "./user-error";
 import type { SpeechOwner } from "./voice";
 import { createSpeechOwner, ensureVoiceConsent, speakText, stopSpeaking } from "./voice";
@@ -860,7 +863,12 @@ function productionDeps(requestContext?: ApiRequestContext): CallDeps {
 /** The device's own speech recognition, which works with a speak-only voice provider. */
 async function dictateTurn(handlers: DictationHandlers, signal: AbortSignal): Promise<boolean> {
   if (!(await dictation.available())) return false;
-  const lang = recognitionLocaleTag(getActiveUiLocale(), await deviceLanguage());
+  const preference = await loadSpeechRecognitionLanguage().catch(() => null);
+  const lang = resolveSpeechRecognitionLanguage({
+    preference,
+    uiLocale: getActiveUiLocale(),
+    deviceLanguage: await deviceLanguage(),
+  });
   await dictation.listen({ ...handlers, signal, lang });
   return true;
 }

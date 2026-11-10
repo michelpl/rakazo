@@ -6,7 +6,7 @@ import {
 } from "@rakazo/contracts";
 import { fetchFresh, writeSaved } from "@rakazo/core/query";
 import { isCancelledError } from "@tanstack/react-query";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,7 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LoadFailure } from "../../components/load-failure";
 import { NativeActionButton } from "../../components/native-action-button";
 import { NativeSwitch } from "../../components/native-switch";
-import { Checkmark } from "../../components/row-accessories";
+import { Checkmark, Chevron } from "../../components/row-accessories";
 import { mobileTokens } from "../../lib/appearance";
 import {
   loadCallGreetingEnabled,
@@ -39,6 +39,10 @@ import { queryClient, rpcQuery } from "../../lib/query";
 import type { SettingsTarget } from "../../lib/settings-target";
 import { settingsRpc, settingsTarget } from "../../lib/settings-target";
 import { useSideInsets } from "../../lib/side-insets";
+import {
+  loadSpeechRecognitionLanguage,
+  speechRecognitionLanguageLabel,
+} from "../../lib/speech-recognition-language";
 import { errorText } from "../../lib/user-error";
 import { speakText } from "../../lib/voice";
 
@@ -86,13 +90,14 @@ function cachedVoiceSettings(target: SettingsTarget) {
  */
 export default function VoiceSettings() {
   const params = useLocalSearchParams<{ spaceId?: string }>();
+  const router = useRouter();
   const target = useMemo(() => settingsTarget(params.spaceId), [params.spaceId]);
   const rpc = useMemo(() => settingsRpc(target), [target]);
   const scope = target.scope;
   const deviceSettings = scope === "account";
   const sideInsets = useSideInsets();
   const styles = useThemedStyles(createVoiceStyles);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [cached] = useState(() => cachedVoiceSettings(target));
   const [catalog, setCatalog] = useState<VoiceCatalogEntry[]>(cached?.catalog ?? []);
   const [credentials, setCredentials] = useState<VoiceCredential[]>(cached?.credentials ?? []);
@@ -119,6 +124,8 @@ export default function VoiceSettings() {
   const [callSounds, setCallSounds] = useState<boolean | null>(null);
   const [waitSound, setWaitSound] = useState<boolean | null>(null);
   const [callGreeting, setCallGreeting] = useState<boolean | null>(null);
+  /** `undefined` until loaded; `null` means system default. */
+  const [speechLanguage, setSpeechLanguage] = useState<string | null | undefined>(undefined);
   // Prevent stale reads from overwriting a saved preference.
   const soundPrefsRevision = useRef(0);
   const soundPrefSaving = useRef(false);
@@ -214,12 +221,16 @@ export default function VoiceSettings() {
         loadCallSoundsEnabled(),
         loadWaitSoundEnabled(),
         loadCallGreetingEnabled(),
-      ]).then(([calls, waiting, greeting]) => {
+        loadSpeechRecognitionLanguage(),
+      ]).then(([calls, waiting, greeting, speech]) => {
         if (soundPrefSaving.current || soundPrefsRevision.current !== soundRevision) return;
         setCallSounds(calls.status === "fulfilled" ? calls.value : null);
         setWaitSound(waiting.status === "fulfilled" ? waiting.value : null);
         setCallGreeting(greeting.status === "fulfilled" ? greeting.value : null);
-        const failed = [calls, waiting, greeting].find((result) => result.status === "rejected");
+        setSpeechLanguage(speech.status === "fulfilled" ? speech.value : null);
+        const failed = [calls, waiting, greeting, speech].find(
+          (result) => result.status === "rejected",
+        );
         if (failed?.status === "rejected") {
           setError(errorText(failed.reason, t("Could not load voice settings")));
         }
@@ -679,7 +690,38 @@ export default function VoiceSettings() {
         ) : null}
         {deviceSettings ? (
           <View style={styles.group}>
-            <View style={styles.groupRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t("Voice recognition language")}
+              accessibilityValue={{
+                text:
+                  speechLanguage === undefined
+                    ? ""
+                    : speechLanguage
+                      ? speechRecognitionLanguageLabel(speechLanguage, locale)
+                      : t("System default"),
+              }}
+              disabled={speechLanguage === undefined}
+              onPress={() => router.push("/speech-recognition-language")}
+              style={({ pressed }) => [
+                styles.groupRow,
+                speechLanguage === undefined && styles.disabled,
+                pressed && styles.pressed,
+              ]}
+            >
+              <View style={styles.rowCopy}>
+                <Text style={styles.cardTitle}>{t("Voice recognition language")}</Text>
+              </View>
+              <Text style={styles.rowValue} numberOfLines={1}>
+                {speechLanguage === undefined
+                  ? ""
+                  : speechLanguage
+                    ? speechRecognitionLanguageLabel(speechLanguage, locale)
+                    : t("System default")}
+              </Text>
+              <Chevron />
+            </Pressable>
+            <View style={[styles.groupRow, styles.groupDivider]}>
               <View style={styles.rowCopy}>
                 <Text style={styles.cardTitle}>{t("Call sounds")}</Text>
               </View>
@@ -739,6 +781,7 @@ function createVoiceStyles() {
       borderTopColor: native.separator,
     },
     rowCopy: { flex: 1 },
+    rowValue: { flexShrink: 1, maxWidth: "45%", color: native.secondaryLabel, fontSize: 16 },
     cardTitle: { color: native.label, fontSize: 16 },
     fieldLabel: { color: native.label, marginTop: 16 },
     input: {

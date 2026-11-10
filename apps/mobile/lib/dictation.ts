@@ -31,6 +31,12 @@ type ResultEvent = { isFinal: boolean; results: { transcript: string }[] };
 type ErrorEvent = { error?: string };
 type DictationEventMap = { result: ResultEvent; end: null; error: ErrorEvent };
 
+/** Locales the recognizer reports for on-device recognition. */
+export type RecognitionLocales = {
+  locales: string[];
+  installedLocales?: string[];
+};
+
 /** The slice of `expo-speech-recognition` this module needs, so tests can drive the events. */
 export type SpeechRecognizer = {
   start(options: { lang: string; interimResults: boolean; continuous: boolean }): void;
@@ -38,7 +44,7 @@ export type SpeechRecognizer = {
   abort(): void;
   isRecognitionAvailable(): boolean;
   requestPermissionsAsync(): Promise<{ granted: boolean }>;
-  getSupportedLocales(options: Record<string, never>): Promise<{ locales: string[] }>;
+  getSupportedLocales(options: Record<string, never>): Promise<RecognitionLocales>;
   addListener<Event extends keyof DictationEventMap>(
     event: Event,
     listener: (payload: DictationEventMap[Event]) => void,
@@ -82,7 +88,7 @@ let supported: Promise<string[]> | null = null;
 
 /**
  * iOS starts a recognizer only for a tag it lists exactly. Android takes any regional tag, and
- * asking it would start its recognition service first, so it lists nothing here.
+ * asking during listen would start its recognition service first, so it lists nothing here.
  */
 function supportedLocales(recognizer: SpeechRecognizer): Promise<string[]> {
   if (Platform.OS !== "ios") return Promise.resolve([]);
@@ -91,6 +97,23 @@ function supportedLocales(recognizer: SpeechRecognizer): Promise<string[]> {
     () => [],
   );
   return supported;
+}
+
+/**
+ * Languages the device recognizer supports or has installed, for the settings picker.
+ * Queried on every platform; an empty list means only system default can be offered.
+ */
+export async function listRecognitionLocales(): Promise<string[]> {
+  try {
+    const recognizer = await load();
+    const result = await recognizer.getSupportedLocales({});
+    const tags = [...(result.locales ?? []), ...(result.installedLocales ?? [])];
+    return [...new Set(tags.filter((tag) => typeof tag === "string" && tag))].sort((a, b) =>
+      a.localeCompare(b),
+    );
+  } catch {
+    return [];
+  }
 }
 
 /** A session older than this one can never deliver a final. */

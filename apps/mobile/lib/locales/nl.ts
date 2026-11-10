@@ -1011,6 +1011,8 @@ export const NL_MESSAGES: Record<string, string> = {
   Unmute: "Dempen opheffen",
   "Voice chat": "Stemchat",
   "Call sounds": "Gespreksgeluiden",
+  "Voice recognition language": "Taal voor spraakherkenning",
+  "System default": "Systeemstandaard",
   "Call greeting": "Begroeting bij gesprek",
   "Hello {name}, {bot} here.": "Hallo {name}, {bot} hier.",
   "Hello, {bot} here.": "Hallo, {bot} hier.",

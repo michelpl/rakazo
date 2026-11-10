@@ -19,6 +19,11 @@ vi.mock("./side-insets", () => ({ useSideInsets: () => ({}) }));
 vi.mock("expo-router", () => ({
   useFocusEffect: (callback: () => void) => useEffect(callback, [callback]),
   useLocalSearchParams: () => state.params,
+  useRouter: () => ({ push: vi.fn() }),
+}));
+vi.mock("./speech-recognition-language", () => ({
+  loadSpeechRecognitionLanguage: async () => null,
+  speechRecognitionLanguageLabel: (tag: string) => tag,
 }));
 vi.mock("./api-server", () => ({}));
 vi.mock("./api-auth", () => ({}));
@@ -48,9 +53,13 @@ vi.mock("./call-sounds", () => ({
 vi.mock("./voice", () => ({ speakText: vi.fn() }));
 vi.mock("./appearance", () => ({ mobileTokens: () => ({}) }));
 vi.mock("./native", () => ({ native: {}, useThemedStyles: (factory: () => unknown) => factory() }));
-vi.mock("./i18n", () => ({ t: (text: string) => text, useI18n: () => ({ t }) }));
+vi.mock("./i18n", () => ({
+  t: (text: string) => text,
+  useI18n: () => ({ t, locale: "en" }),
+}));
 vi.mock("../components/row-accessories", () => ({
   Checkmark: () => <span data-testid="checkmark" />,
+  Chevron: () => <span data-testid="chevron" />,
 }));
 vi.mock("../components/native-switch", () => ({ NativeSwitch: () => null }));
 vi.mock("react-native-safe-area-context", () => ({

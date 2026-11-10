@@ -1011,6 +1011,8 @@ export const PL_MESSAGES: Record<string, string> = {
   Unmute: "Włącz mikrofon",
   "Voice chat": "Czat głosowy",
   "Call sounds": "Dźwięki rozmów",
+  "Voice recognition language": "Język rozpoznawania mowy",
+  "System default": "Domyślne systemowe",
   "Call greeting": "Powitanie w rozmowie",
   "Hello {name}, {bot} here.": "Cześć {name}, tu {bot}.",
   "Hello, {bot} here.": "Cześć, tu {bot}.",
