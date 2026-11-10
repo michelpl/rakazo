@@ -1466,6 +1466,39 @@ describe("mobile call speech locales", () => {
       expect(fake.recordings).toHaveLength(0);
     },
   );
+
+  it("passes a saved recognition language to the recognizer", async () => {
+    const SecureStore = await import("expo-secure-store");
+    const { SPEECH_RECOGNITION_LANGUAGE_KEY } = await import("./speech-recognition-language");
+    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) =>
+      key === SPEECH_RECOGNITION_LANGUAGE_KEY ? "pt-BR" : null,
+    );
+    device.os = "android";
+    device.languageTag = "en-US";
+    const start = vi.fn();
+    const recognizer: SpeechRecognizer = {
+      start,
+      stop: vi.fn(),
+      abort: vi.fn(),
+      isRecognitionAvailable: () => true,
+      requestPermissionsAsync: async () => ({ granted: true }),
+      getSupportedLocales: async () => ({ locales: [] }),
+      addListener: () => ({ remove: () => undefined }),
+    };
+    setSpeechRecognizer(recognizer);
+    activateUiLocale("en");
+    const fake = fakes();
+    const { dictate: _dictate, ...deps } = fake.deps;
+    startCall({ botId: "bot-1", botName: "Ada", transcribe: false }, deps);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(start).toHaveBeenCalledWith({
+      lang: "pt-BR",
+      interimResults: true,
+      continuous: true,
+    });
+    vi.mocked(SecureStore.getItemAsync).mockImplementation(async () => null);
+  });
 });
 
 describe("mobile call recognition recovery", () => {

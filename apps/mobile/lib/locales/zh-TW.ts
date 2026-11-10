@@ -991,6 +991,8 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "Speaks with your phone's own text-to-speech instead of a connected provider.":
     "使用手機內建的文字轉語音功能朗讀，不使用已連接的語音供應商。",
   "Call sounds": "通話提示音",
+  "Voice recognition language": "語音辨識語言",
+  "System default": "系統預設",
   "Call greeting": "通話問候語",
   "Hello {name}, {bot} here.": "你好 {name}，我是 {bot}。",
   "Hello, {bot} here.": "你好，我是 {bot}。",

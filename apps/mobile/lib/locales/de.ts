@@ -1020,6 +1020,8 @@ export const DE_MESSAGES: Record<string, string> = {
   Unmute: "Stummschaltung aufheben",
   "Voice chat": "Sprachchat",
   "Call sounds": "Anruftöne",
+  "Voice recognition language": "Spracherkennungssprache",
+  "System default": "Systemstandard",
   "Call greeting": "Anrufbegrüßung",
   "Hello {name}, {bot} here.": "Hallo {name}, hier ist {bot}.",
   "Hello, {bot} here.": "Hallo, hier ist {bot}.",

@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SpeechRecognizer } from "./dictation";
-import { ENDPOINT_SILENCE_MS, listen, setSpeechRecognizer, stop } from "./dictation";
+import {
+  ENDPOINT_SILENCE_MS,
+  listen,
+  listRecognitionLocales,
+  setSpeechRecognizer,
+  stop,
+} from "./dictation";
 import { reportMobileError } from "./monitoring";
 
 vi.mock("./monitoring", () => ({ reportMobileError: vi.fn() }));
@@ -64,6 +70,14 @@ afterEach(() => {
 });
 
 describe("mobile dictation", () => {
+  it("lists recognition locales from the device recognizer", async () => {
+    fake.recognizer.getSupportedLocales = async () => ({
+      locales: ["pt-BR", "en-US"],
+      installedLocales: ["en-US", "es-MX"],
+    });
+    await expect(listRecognitionLocales()).resolves.toEqual(["en-US", "es-MX", "pt-BR"]);
+  });
+
   it("uses the supported iOS regional fallback", async () => {
     const locales = vi.fn(async () => ({ locales: ["es-ES", "es-MX"] }));
     fake.recognizer.getSupportedLocales = locales;

@@ -43,3 +43,8 @@ missed call shows **Call back** in the chat.
 
 The mobile app uses your phone's own speech recognition and voices for calls. Pick a
 **Device voice** in a bot's settings. On Android, a call keeps going with the screen off.
+
+Under **Settings → Voice**, **Voice recognition language** chooses the language the phone
+uses when it listens. **System default** follows the app and device languages; otherwise pick
+any language the device recognizer lists. The choice stays on the phone and applies to calls
+and on-device dictation.

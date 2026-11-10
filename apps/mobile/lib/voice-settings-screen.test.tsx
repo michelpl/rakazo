@@ -32,6 +32,7 @@ vi.mock("expo-router", () => ({
     }, [callback, mocks.focused]);
   },
   useLocalSearchParams: () => ({}),
+  useRouter: () => ({ push: vi.fn() }),
 }));
 vi.mock("./call-sounds", () => ({
   loadCallSoundsEnabled: mocks.calls,
@@ -41,6 +42,10 @@ vi.mock("./call-sounds", () => ({
   saveCallSoundsEnabled: mocks.saveCalls,
   saveWaitSoundEnabled: mocks.saveWaiting,
   playCallCue: mocks.cue,
+}));
+vi.mock("./speech-recognition-language", () => ({
+  loadSpeechRecognitionLanguage: async () => null,
+  speechRecognitionLanguageLabel: (tag: string) => tag,
 }));
 vi.mock("./api-server", () => ({}));
 vi.mock("./api-auth", () => ({}));
@@ -64,7 +69,7 @@ vi.mock("./device-voice", () => ({
   saveDeviceVoiceEnabled: vi.fn(),
 }));
 vi.mock("./voice", () => ({ speakText: vi.fn() }));
-vi.mock("./i18n", () => ({ t: mocks.t, useI18n: () => ({ t: mocks.t }) }));
+vi.mock("./i18n", () => ({ t: mocks.t, useI18n: () => ({ t: mocks.t, locale: "en" }) }));
 vi.mock("./appearance", () => ({ mobileTokens: () => ({ destructive: "red" }) }));
 vi.mock("./native", () => ({ native: {}, useThemedStyles: (factory: () => unknown) => factory() }));
 vi.mock("../components/row-accessories", () => ({ Checkmark: () => null, Chevron: () => null }));

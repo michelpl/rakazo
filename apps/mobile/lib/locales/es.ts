@@ -961,6 +961,8 @@ export const ES_MESSAGES: Record<string, string> = {
   Unmute: "Activar el sonido",
   "Voice chat": "Chat de voz",
   "Call sounds": "Sonidos de llamada",
+  "Voice recognition language": "Idioma de reconocimiento de voz",
+  "System default": "Predeterminado del sistema",
   "Call greeting": "Saludo de llamada",
   "Hello {name}, {bot} here.": "Hola, {name}. Soy {bot}.",
   "Hello, {bot} here.": "Hola, soy {bot}.",

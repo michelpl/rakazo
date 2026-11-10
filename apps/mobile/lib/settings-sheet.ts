@@ -28,6 +28,7 @@ const settingsScreens = new Set([
   "skill",
   "skills",
   "space",
+  "speech-recognition-language",
   "spending-limit",
   "team-conversation",
   "vault",
